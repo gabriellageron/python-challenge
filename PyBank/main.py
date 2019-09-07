@@ -1,63 +1,62 @@
-#import OS moudule
+import csv
 import os
 
-#module for reading CSV files
-import csv
+#create variable for file name
+file_num = 2
 
+#file path
 csvpath = os.path.join('Resources', 'budget_data.csv')
 
-number_of_months = 0
-profit_loss = 0
-#previous_pl = int(row[1])
-#current_pl = int(row[1])-previous_pl
-net_change = []
-month_of_change = []
+#emply lists for month and revenue data
+months = []
+revenue = []
 
-
-#with open(csvpath, 'r') as file_handler:
-    #lines = file_handler.read()
-    #print(lines)
-    #print(type(lines))
-
-
+#read csv and move data into lists revenue list will be list of integers
+with open(csvpath, 'r') as csvfile:
+    csvreadr = csv.reader(csvfile)
     
-#The total number of months included in the dataset
-with open(csvpath, 'r') as file:
-    csv_reader_object = csv.reader(file)
-    #first_row = next(csv_reader_object)
-    if csv.Sniffer().has_header:
-        next(csv_reader_object)
-    first_row = next(csv_reader_object)
-    for row in csv_reader_object:
-        number_of_months += 1
-        #The net total amount of "Profit/Losses" over the entire period
-        profit_loss += int(row[1])
-        previous_pl = int(first_row[1])
-        current_pl = previous_pl - int(row[1])
-        #test_profit_loss = int(row[1])-int(row[1])
-        net_change = net_change + [current_pl]
-        month_of_change += [row[0]]
-        print(int(row[1]))
-        #print(test_profit_loss)
-print("Total Months: ", number_of_months)
-print(profit_loss)
-print(profit_loss)
-print(current_pl)
-print(previous_pl)
-print(net_change)
-print(month_of_change)
+    next(csvreadr, None)
 
+    for row in csvreadr:
+        months.append(row[0])
+        revenue.append(int(row[1]))
 
-#sum the net change list, divide by net change list to get average - outside for loop
+#find total months
+total_months = len(months)
 
-#greatest_increase = 0 - inside for loop
-#greatest_dec = 99999999  - inside for loop
+#create greatest increase, decrease variables and set them equal to the first revenue entry
+#set total revenue = 0 
+greatest_inc = revenue[0]
+greatest_dec = revenue[0]
+total_revenue = 0
 
-    
+#loop through revenue and compare to find greatest inc and dec
+#also add each revenue to total revenue
+for r in range(len(revenue)):
+    if revenue[r] >= greatest_inc:
+        greatest_inc = revenue[r]
+        great_inc_month = months[r]
+    elif revenue[r] <= greatest_dec:
+        greatest_dec = revenue[r]
+        great_dec_month = months[r]
+    total_revenue += revenue[r]
 
+#calculate average_change
+average_change = round(total_revenue/total_months, 2)
 
-#The average of the changes in "Profit/Losses" over the entire period
+#sets path for output file
+output_dest = os.path.join('Output','pybank_output_' + str(file_num) + '.txt')
 
-#The greatest increase in profits (date and amount) over the entire period
+# opens the output destination in write mode and prints the summary
+with open(output_dest, 'w') as writefile:
+    writefile.writelines('Financial Analysis\n')
+    writefile.writelines('----------------------------' + '\n')
+    writefile.writelines('Total Months: ' + str(total_months) + '\n')
+    writefile.writelines('Total Revenue: $' + str(total_revenue) + '\n')
+    writefile.writelines('Average Revenue Change: $' + str(average_change) + '\n')
+    writefile.writelines('Greatest Increase in Revenue: ' + great_inc_month + ' ($' + str(greatest_inc) + ')'+ '\n')
+    writefile.writelines('Greatest Decrease in Revenue: ' + great_dec_month + ' ($' + str(greatest_dec) + ')')
 
-#The greatest decrease in losses (date and amount) over the entire period
+#opens the output file in r mode and prints to terminal
+with open(output_dest, 'r') as readfile:
+    print(readfile.read())
