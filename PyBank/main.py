@@ -1,62 +1,69 @@
-import csv
 import os
+import csv
 
-#create variable for file name
-file_num = 2
-
-#file path
-csvpath = os.path.join('Resources', 'budget_data.csv')
-
-#emply lists for month and revenue data
-months = []
-revenue = []
-
-#read csv and move data into lists revenue list will be list of integers
-with open(csvpath, 'r') as csvfile:
-    csvreadr = csv.reader(csvfile)
-    
-    next(csvreadr, None)
-
-    for row in csvreadr:
-        months.append(row[0])
-        revenue.append(int(row[1]))
-
-#find total months
-total_months = len(months)
-
-#create greatest increase, decrease variables and set them equal to the first revenue entry
-#set total revenue = 0 
-greatest_inc = revenue[0]
-greatest_dec = revenue[0]
+total_months = 0
 total_revenue = 0
+avg_rev_chg = 0
+great_rev_inc_date = "Date1"
+great_rev_inc_amount = 0
+great_rev_dec_date = "Date2"
+great_dec_amount = 0
+tot_rev_chg = 0
 
-#loop through revenue and compare to find greatest inc and dec
-#also add each revenue to total revenue
-for r in range(len(revenue)):
-    if revenue[r] >= greatest_inc:
-        greatest_inc = revenue[r]
-        great_inc_month = months[r]
-    elif revenue[r] <= greatest_dec:
-        greatest_dec = revenue[r]
-        great_dec_month = months[r]
-    total_revenue += revenue[r]
 
-#calculate average_change
-average_change = round(total_revenue/total_months, 2)
+fileList = ["budget_data.csv"]
+for file in fileList:
+    csvpath = os.path.join('Resources', 'budget_data.csv')
+    with open(csvpath, newline='') as csvfile:
+        csvfile.readline()
+        csvreader = csv.reader(csvfile, delimiter=',')
+        total_months = 0
+        total_revenue = 0
+        prevRevenue = 0
+        great_rev_inc_amount = 0
+        great_dec_amount = 0
+        for row in csvreader:
+            total_revenue = total_revenue + int(row[1])
+            #find total months
+            total_months = total_months +1
+            #create greates increase/decrease variables
+            revIncrease = int(row[1]) - prevRevenue
+            tot_rev_chg = tot_rev_chg + revIncrease
+            prevRevenue =  int(row[1])
+            if(revIncrease > great_rev_inc_amount):
+                great_rev_inc_amount = revIncrease
+                great_rev_inc_date = row[0]
+            
+            if(revIncrease < great_dec_amount):
+                great_dec_amount = revIncrease
+                great_rev_dec_date = row[0]
 
-#sets path for output file
-output_dest = os.path.join('Output','pybank_output_' + str(file_num) + '.txt')
 
-# opens the output destination in write mode and prints the summary
-with open(output_dest, 'w') as writefile:
-    writefile.writelines('Financial Analysis\n')
-    writefile.writelines('----------------------------' + '\n')
-    writefile.writelines('Total Months: ' + str(total_months) + '\n')
-    writefile.writelines('Total Revenue: $' + str(total_revenue) + '\n')
-    writefile.writelines('Average Revenue Change: $' + str(average_change) + '\n')
-    writefile.writelines('Greatest Increase in Revenue: ' + great_inc_month + ' ($' + str(greatest_inc) + ')'+ '\n')
-    writefile.writelines('Greatest Decrease in Revenue: ' + great_dec_month + ' ($' + str(greatest_dec) + ')')
+    avg_rev_chg = round(tot_rev_chg/total_months,2)
 
-#opens the output file in r mode and prints to terminal
-with open(output_dest, 'r') as readfile:
-    print(readfile.read())
+   #create and open output file to write resuts to
+    outputpath = os.path.join("Output",file.split(".")[0] + "_Results.txt")
+
+    lines = []
+    
+    resultsfile = open(outputpath, "w")
+    
+    #create the output
+    lines.append("Financial Analysis")
+    lines.append("----------------------------")
+    lines.append("Total Months: "+str(total_months))
+    lines.append("Total Revenue: $" + str(total_revenue))
+    lines.append("Average Revenue Change: $"+str(avg_rev_chg))
+    lines.append("Greatest Increase in Revenue: "+great_rev_inc_date + " ($" + str(great_rev_inc_amount) +")")
+    lines.append("Greatest Decrease in Revenue: "+great_rev_dec_date + " ($" + str(great_dec_amount) +")")
+
+     ##Write the output to file and console
+    for line in lines:
+        print(line)
+        print(line,file=resultsfile)
+        
+    #new line
+    print()
+    
+    #close the file
+    resultsfile.close()
